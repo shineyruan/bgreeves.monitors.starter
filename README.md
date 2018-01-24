@@ -2,7 +2,7 @@
 
 ## Examples
 
-### Before/After Class: Implement on your own for practice
+## Before/After Class: Implement on your own for practice
 
 - `queue/`: Thread-safe queue
 - `producer_consumer/`: Producer Consumer
