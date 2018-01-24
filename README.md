@@ -1,7 +1,5 @@
 # Discussion 2 Starter Code
 
-## Examples
-
 ## Before/After Class: Implement on your own for practice
 
 - `queue/`: Thread-safe queue
