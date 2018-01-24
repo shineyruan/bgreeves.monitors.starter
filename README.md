@@ -1,0 +1,35 @@
+# Discussion 2 Starter Code
+
+## Examples
+
+### Before/After Class: Implement on your own for practice
+
+- `queue/`: Thread-safe queue
+- `producer_consumer/`: Producer Consumer
+- `rw_lock/`: Reader-Writer Lock
+
+## During Class: Implement together
+
+- `bathroom/`: Bathroom example
+- `barrier/`: Barrier implementation
+
+## Instructions
+
+### Download code
+
+```
+$ git clone https://github.com/eecs482/bgreeves.disc.2.starter.git
+```
+
+### Compile examples
+
+Each folder has a Makefile and all the files you should need to compile on CAEN using:
+
+```
+# To build
+$ make
+
+# To clean
+$ make clean
+``` 
+
