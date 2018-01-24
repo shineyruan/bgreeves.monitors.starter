@@ -1,0 +1,9 @@
+# Ignore vim swap files
+*.swp
+
+# Ignore executables
+bathroom/bathroom
+barrier/barrier
+rw_lock/rw_lock
+queue/queue
+producer_consumer/producer_consumer
