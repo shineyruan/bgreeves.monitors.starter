@@ -1,0 +1,348 @@
+<html>
+<head>
+<title>Discussion questions: monitors</title>
+
+<script type="text/javascript">
+ function showHide(id) {
+    var e = document.getElementById(id);
+    e.style.display = (e.style.display == 'block') ? 'none' : 'block';
+ }
+</script>
+
+<style type="text/css">
+pre {
+  margin-left:30px; 
+  border-left:4px solid black;
+  padding-left:10px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+</style>
+</head>
+<body>
+<h1>Discussion questions: monitors</h1>
+
+<p>
+Please work out these problems before your next discussion section.  The
+GSIs and IAs will go over these problems during the discussion section.
+
+<h3>1. Restroom access</h3>
+
+<p>
+U-M decides to save money on the construction of the new CSE building
+by building only unisex restrooms (as opposed to redundant men's and women's
+rooms on each floor). For modesty's sake, however, they impose the rule that 
+only people of one gender may occupy a given restroom at the same time.
+
+<p>
+Your task is to write a program which models access to a restroom, using
+Mesa monitor primitives.
+
+<p>
+Write the following procedures:
+<tt>woman_wants_to_enter()</tt>, <tt>man_wants_to_enter()</tt>,
+<tt>woman_leaves()</tt>, <tt>man_leaves()</tt>.
+
+<p>
+Use the monitor primitives <tt>lock()</tt>, <tt>unlock()</tt>,
+<tt>signal()</tt>, <tt>wait()</tt>, and <tt>broadcast()</tt> in these
+functions to control access to the restroom. You may assume there is
+no limit on the number of people of the same gender who may occupy the
+restroom at a given time.
+
+<p>
+Next, we want to modify our solution in order to prevent starvation. In other
+words, a person should not have to wait indefinitely to enter, assuming that 
+each person already in the restroom stays there for some finite time period.
+
+We will try to ensure fairness using a bool called TURN.  TURN can be set to either MEN or WOMEN.
+Write a solution that uses the TURN variable to alternate priorities between men and women when 
+both groups are waiting.  For example, if there are women in the bathroom and men waiting for the
+bathroom and a woman arrives, the woman should only be allowed in if TURN = WOMEN.  Flip the TURN
+variable when appropriate.
+
+<p>
+Notice that we can change the TURN variable in either the woman_leaves() function, or the
+woman_wants_to_enter() function.
+
+<ol>
+<li>Describe the fairness policy enforced if we change the TURN variable in <tt>woman_wants_to_enter()</tt>.
+<li>Describe the fairness policy enforced if we change the TURN variable in <tt>woman_leaves()</tt>.
+<li>Do either of these actually prevent starvation?
+</ol>
+
+We want a policy that maximizes concurrency while not allowing for starvation.
+What fairness policy do we actually want?  What would it take to implement this?
+
+<h3>2. Locks</h3>
+
+<p>
+Assume n threads are accessing m independent shared objects (e.g., shared
+variables). How many locks are required to provide maximum concurrency 
+within the threads? Does more concurrency imply better performance?
+
+<h3>3. File access</h3>
+
+<p>
+Several threads are accessing a file.  Each thread has a a unique priority
+number. The file can be accessed simultaneously by several threads,
+subject to the following constraint: the sum of all unique priority numbers
+of the threads currently accessing the file must be less than n.
+
+<p>
+Show how to use monitors to coordinate access to the file.
+
+<h3>4. Barriers</h3> 
+
+<p>
+<i>(This problem has optional background material. The background
+reading tries to give you a sense of how you might find parallelism
+and use monitors in a real world problem, and attempts to motivate the
+usefulness of barriers. If you'd like to read the background
+material, <a href="javascript:showHide('backMaterial');">click here</a>. It is not
+necessary to understand the background material to do the
+problem.)</i>
+
+<div id="backMaterial" style="display:none">
+<p>
+Certain classes of partial differential equations can be solved by an
+iterative method called relaxation. One such PDE is the one
+dimentional form of Poisson's equation:
+&part;<sup>2</sup><i>V</i>/&part;<i>x</i><sup>2</sup>
+= <i>f(x)</i>. If you create a vector of doubles representing the
+values of <i>V</i> at <tt>SIZE + 1</tt> discretized points, you can
+calculate an approximate solution through iteration. At each
+point <tt>i</tt> from <tt>1</tt> to <tt>SIZE-1</tt>, you can compute
+the next value of <tt>V[i] = (V[i+1] + V[i-1] -
+f(i))/2</tt>. Eventually, in enough iterations, <tt>V</tt> will converge
+to the solution of the PDE.
+
+<p>
+So, you write the following code:
+<pre>
+void relaxation(int * V, int (*f)(int) f, int size, int count) {
+  // A temporary buffer to hold alternate iterations
+  int * tmp = new int[size]; 
+  // A pointer point at the next iteration array
+  int * p = tmp;
+  // A pointer pointing at the old iteration array
+  int * p_prime = V + 1;
+
+  for (int j = 0; j < count; j++) {
+    for (int i = 0; i < size; i++) {
+      //Computing the next iteration
+      p[i] = (p_prime[i-1] + p_prime[i+1] - f(i))/2;
+    }   
+    // Swap the two pointers, so that the old array can be
+    // reused for the next
+    swap(p, p_prime);
+  }
+
+  // If when we finished, the result was not in the input array
+  // copy it back there.
+  if (p != V + 1) {
+    memcpy(V + 1, p, size);
+  }
+
+  delete tmp;
+}
+</pre>
+
+You run the code and are satisfied with its correctness, but because
+you make SIZE large and <i>f</i> is difficult to compute, this
+function is slow. You decide that you could divide up the array and
+give part of the array to multiple threads.
+
+<pre>
+struct relaxation_config {
+  int * V;
+  int * p;
+  int * p_prime;
+  int (*f)(int);
+  int size;
+  int count;
+};
+
+void relaxation_thread(void * arg) {
+  // Cast the input to a relaxation_config struct pointer.
+  relaxation_config * config = arg;
+
+  // Compute our portion of the iteration.
+  for (int j = 0; j < config->count; j++) {
+      // For each cell in our range, evaluate the expression.
+      for (int i = 0; i < config->size; i++) {
+         config->p[i] = (config->p_prime[i-1] + 
+           config->p_prime[i+1] - config->f(i))/2;
+      }   
+      swap(config->p, config->p_prime);
+  }
+
+  if (config->p != config->V) {
+    memcpy(config->V, config->p, size);
+  }
+
+  delete config;
+}
+
+void relaxation(int * V, int (*f)(int), int size, int count) {
+  int * tmp = new int[size]; 
+  int * p = tmp;
+  int * p_prime = V + 1;
+  thread * threads[NUM_THREADS];
+
+  // Each thread will do thread_size entries in the matrix.
+  int thread_size = size/NUM_THREADS;
+
+  for (int i = 0; i < NUM_THREADS; i++) {
+    // Configure the child thread
+    relaxation_config * config = new relaxation_config;
+    // Each thread gets a segment beginning i * thread_size through
+    config->V = V + 1 + i * thread_size;
+    config->p = p + i * thread_size;
+    config->p_prime = p_prime + i * thread_size;
+    config->f = f;
+    config->size = thread_size;
+    config->count = count;
+    // Create the thread
+    threads[i] = new thread(relaxation_thread, (void*) config);
+  }
+
+  // Join with all the threads. Function cannot return until 
+  // all threads have finished!
+  for (int i = 0; i < NUM_THREADS; i++) {
+    threads[i]->join();
+    delete threads[i];
+  }
+
+  delete tmp;
+}
+</pre> 
+
+<strong>But this code has a bug!</strong> Each thread computes all of
+its cells, but what happens on the edges? When a thread is computing
+it's <tt>j</tt>'th <tt>i=0</tt> iteration of the inner loop, it is
+dependent on another thread having completed
+it's <tt>j-1</tt>'th <tt>i=threadd_size - 1</tt> iteration! We must
+enforce this restriction.
+
+<p>
+So, you consult your EECS 482 textbook and see that the solution is to
+use a <strong>barrier</strong>. But alas, the simple EECS 482 thread
+library doesn't provide them. So, you decide to implement barriers
+with monitors.
+</div>
+
+<p>
+A barrier is a tool that provides a way for various threads to
+synchronize their progress. Threads "check in" or wait at a barrier
+and are only allowed to proceed past the barrier when a certain number
+of threads have "checked in" to the barrier. This tool allows a
+program to run phases in parallel (particularly useful in
+matrix operations).
+
+<p>
+Your job is to implement barriers using monitors. <strong>Implement
+the constructor and <tt>wait</tt> function adding private variables as
+needed.</strong>
+
+<pre>
+class Barrier {
+ private:
+  //Add your private member variables
+
+
+
+
+
+ public:
+  /* Constructs a new barrier that will allow number_of_threads
+     threads to check in. */
+  Barrier(int number_of_threads);
+
+  /* Called by a thread checking in to the barrier. Should return
+     true if the thread was the last thread to check in (in POSIX threads
+     lingo, the "serial thread") and false otherwise. This function should
+     block until all threads have checked in. */
+  bool wait();
+
+  /* Delete copy constructor and copy assignment operators */
+  Barrier(const Barrier&) = delete;
+  Barrier& operator=(const Barrier&) = delete;
+  Barrier(Barrier&&) = delete;
+  Barrier& operator=(Barrier&&) = delete;
+};
+</pre>
+
+<div id="pBackMaterial" style="display:none;">
+<p>
+Now, armed with your new <tt>Barrier</tt> class, you fix up your code
+so that it works correctly in parallel by having each thread check in
+to the barrier before continuing on to its next iteration of the outer
+loop.
+
+<pre>
+struct relaxation_config {
+  int * V;
+  int * p;
+  int * p_prime;
+  int (*f)(int);
+  int size;
+  int count;
+  Barrier * barrier;
+};
+
+void relaxation_thread(void * arg) {
+  relaxation_config * config = arg;
+  for (int j = 0; j < config->count; j++) {
+      for (int i = 1; i <= config->size; i++) {
+         config->p[i] = (config->p_prime[i-1] + 
+           config->p_prime[i+1] - config->f(i))/2;
+      }   
+      swap(config->p, config->p_prime);
+
+      // Wait at the barrier until all thread have completed
+      // j'th iteration.
+      barrier->wait();
+  }
+
+  if (config->p != config->V) {
+    memcpy(config->V, config->p, size);
+  }
+  delete config;
+}
+
+void relaxation(int * V, int (*f)(int), int size, int count) {
+  int * tmp = new int[size]; 
+  int * p = tmp;
+  int * p_prime = V;
+  thread * threads[NUM_THREADS];
+
+  // Create a new barrier
+  Barrier * barrier = new barrier(NUM_THREADS);
+  int thread_size = size/NUM_THREADS;
+
+  for (int i = 0; i < NUM_THREADS; i++) {
+    relaxation_config * config = new relaxation_config;
+    config->V = V + i * thread_size;
+    config->p = p + i * thread_size;
+    config->p_prime = p_prime + i * thread_size;
+    config->f = f;
+    config->size = thread_size;
+    config->count = count;
+    config->barrier = barrier;
+    threads[i] = new thread(relaxation_thread, (void*) config);
+  }
+
+  for (int i = 0; i < NUM_THREADS; i++) {
+    threads[i]->join();
+    delete threads[i];
+  }
+
+  delete barrier;
+}
+</pre>
+
+</div>
+
+</body>
+</html>
