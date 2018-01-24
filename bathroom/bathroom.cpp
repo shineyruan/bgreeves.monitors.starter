@@ -16,8 +16,24 @@ using std::endl;
 
 // TODO: Implement these
 
+void woman_wants_to_enter() {
+
+}
+
+void man_wants_to_enter() {
+
+}
+
+void woman_leaves() {
+
+}
+
+void man_leaves() {
+
+}
+
+// TODO: Write a test case
 void test(void *a) {
-	// TODO: Write a test case
 	cout << "Hello world!" << endl;
 }
 
