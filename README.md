@@ -1,4 +1,4 @@
-# Discussion 2 Starter Code
+# Monitors Discussion Starter Code
 
 ## Before/After Class: Implement on your own for practice
 
@@ -16,7 +16,7 @@
 ### Download code
 
 ```
-$ git clone https://github.com/eecs482/bgreeves.disc.2.starter.git
+$ git clone https://github.com/eecs482/bgreeves.monitors.starter.git
 ```
 
 ### Compile examples
