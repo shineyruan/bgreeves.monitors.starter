@@ -12,7 +12,7 @@
 
 #include "thread.h"
 
-typedef void (*interrupt_handler_t) (void);
+typedef void (*interrupt_handler_t)(void);
 
 class cpu {
 public:
@@ -69,21 +69,21 @@ public:
      */
     static const unsigned int TIMER = 0;
     static const unsigned int IPI = 1;
-    interrupt_handler_t interrupt_vector_table[IPI+1];
+    interrupt_handler_t interrupt_vector_table[IPI + 1];
 
-    static cpu *self();                 // returns pointer to the cpu this thread
-                                        // is running on
+    static cpu *self();  // returns pointer to the cpu this thread
+                         // is running on
 
-    class impl;                         // defined by the thread library
-    impl *impl_ptr;                     // used by the thread library
+    class impl;      // defined by the thread library
+    impl *impl_ptr;  // used by the thread library
 
     /*
      * Disable the default copy constructor and copy assignment operator.
      */
-    cpu(const cpu&) = delete;
-    cpu& operator=(const cpu&) = delete;
-    cpu(cpu&&) = delete;
-    cpu& operator=(cpu&&) = delete;
+    cpu(const cpu &) = delete;
+    cpu &operator=(const cpu &) = delete;
+    cpu(cpu &&) = delete;
+    cpu &operator=(cpu &&) = delete;
 
 private:
     /*
@@ -96,8 +96,8 @@ private:
      */
     void init(thread_startfunc_t, void *);
 
-    cpu();                              // defined and used by infrastructure
-    static void boot_helper(void *);    // defined and used by infrastructure
+    cpu();                            // defined and used by infrastructure
+    static void boot_helper(void *);  // defined and used by infrastructure
 };
 
 /*
@@ -119,12 +119,12 @@ extern std::atomic<bool> guard;
 #define assert_interrupts_disabled()
 #define assert_interrupts_enabled()
 
-#else // NDEBUG
+#else  // NDEBUG
 
-#define assert_interrupts_disabled()                                    \
-                assert_interrupts_private(__FILE__, __LINE__, true)
-#define assert_interrupts_enabled()                                     \
-                assert_interrupts_private(__FILE__, __LINE__, false)
+#define assert_interrupts_disabled() \
+    assert_interrupts_private(__FILE__, __LINE__, true)
+#define assert_interrupts_enabled() \
+    assert_interrupts_private(__FILE__, __LINE__, false)
 
 /*
  * assert_interrupts_private() is a private function for the interrupt
@@ -132,6 +132,6 @@ extern std::atomic<bool> guard;
  */
 extern void assert_interrupts_private(const char *, int, bool);
 
-#endif // NDEBUG
+#endif  // NDEBUG
 
 #endif /* _CPU_H */

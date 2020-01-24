@@ -9,8 +9,8 @@ public:
     void lock();
     void unlock();
 
-    class impl;                                 // defined by the thread library
-    impl *impl_ptr;                             // used by the thread library
+    class impl;      // defined by the thread library
+    impl* impl_ptr;  // used by the thread library
 
     /*
      * Disable the copy constructor and copy assignment operator.

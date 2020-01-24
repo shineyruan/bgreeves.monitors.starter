@@ -8,14 +8,14 @@ public:
     cv();
     ~cv();
 
-    void wait(mutex&);                  // wait on this condition variable
-    void signal();                      // wake up one thread on this condition
-                                        // variable
-    void broadcast();                   // wake up all threads on this condition
-                                        // variable
+    void wait(mutex&);  // wait on this condition variable
+    void signal();      // wake up one thread on this condition
+                        // variable
+    void broadcast();   // wake up all threads on this condition
+                        // variable
 
-    class impl;                         // defined by the thread library
-    impl *impl_ptr;                     // used by the thread library
+    class impl;      // defined by the thread library
+    impl* impl_ptr;  // used by the thread library
 
     /*
      * Disable the copy constructor and copy assignment operator.
